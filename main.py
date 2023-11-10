@@ -112,7 +112,7 @@ def crearMatriz(n):
         except ValueError:
             print("Ingrese solo valores numéricos (0 o 1). Intente nuevamente.")
 
-    # Mostrar la matriz resultante
+    # Retorna la matriz resultante
     return matriz
 
 # Imprime el vector en "formato matriz" para que sea mas amigable al usuario.
