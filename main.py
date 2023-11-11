@@ -1,79 +1,52 @@
 import numpy as np
 
-# Función que cambia el estado de las luces adyacentes de la matriz
-# que recibe y en las coordenadas que recibe.
-def changeLights(matrix, row, col):
-    n = len(matrix)
-    actual = (0, 0)
-    up = (-1, 0)
-    bottom = (1, 0)
-    left = (0, -1)
-    right = (0, 1)
+def lightsOut(matriz, n):
+    luces = []
+    for i in range(n):
+        for j in range(n):
+            luz = [0] * (n ** 2 + 1) # Inicializa la luz (ecuación) que contendrá los valores de la misma
+            luz[i * n + j] = 1  # Coeficiente de la luz actual
+            luz[-1] = matriz[i][j]  # Resultado esperado (encendido o apagado)
 
-    for rowDirection, colDirection in [actual, up, bottom, left, right]:
-        new_row, new_col = row + rowDirection, col + colDirection
-        
-        #Chequea si las coords estan dentro de la matriz
-        if 0 <= new_row < n and 0 <= new_col < n: 
-            matrix[new_row][new_col] = 1 - matrix[new_row][new_col]
+            lucesCercanas = [
+                (i - 1, j),  # Luz superior
+                (i + 1, j),  # Luz inferior
+                (i, j - 1),  # Luz izquierda
+                (i, j + 1),  # Luz derecha
+            ]
 
-#Funcion que devuelve True si la matriz está toda apagado y 
-#False en caso contrario
-def allLightsOff(matrix):
-    n = len(matrix)
-    return np.array_equal(np.zeros((n, n), dtype=int), matrix)
-     
-def lightsOutSolution(initialMatrix):
-    n = len(initialMatrix)
+            for x, y in lucesCercanas:
+                if 0 <= x < n and 0 <= y < n:
+                    luz[x * n + y] = 1  # Coeficientes de las luces cercanas
 
-    #Funcion que recorre la matriz de manera recursiva, de izquierda a derecha y
-    # de arriba hacia abajo buscando la solucion.
-    def iterateMatrix(matrix, row, col):
+            luces.append(luz)
 
-        #Si ya se recorrio toda la matriz, se verifica si todas las luces
-        #estan apagadas.
-        if row == n:
-            return allLightsOff(matrix), []
-        
-        #Si no se ha recorrido todo, se calcula la siguiente celda hacia la que 
-        #se debe mover.
-        next_row, next_col = row, col + 1
-        if next_col == n:
-            next_row, next_col = row + 1, 0
+    # Eliminación gaussiana
+    for i in range(n ** 2):
+        fila = i
+        while fila < n ** 2 and luces[fila][i] == 0:
+            fila += 1
 
-        #Se hace una llamada recursiva en la que NO se presiona la luz actual.
-        #noPressingLight indicara si no presionar la luz actual conduce a un tablero
-        #apagado y noPressingLight_Lights sera una lista de las luces que se deben presionar
-        #en esa rama del arbol de recursion
-        noPressingLight, noPressingLight_Lights = iterateMatrix(matrix.copy(), next_row, next_col)
-        
-        #Se presiona la luz actual
-        changeLights(matrix, row, col)
+        if fila == n ** 2:
+            continue
 
-        #Se hace una llamada recursiva en la que se presiona la luz actual.
-        #pressingLight indica que si la luz actual conduce a un tablero apagado
-        #y pressingLight_Lights sera una lista de las luces que se deben presionar en 
-        #esa rama del arbol de recursion 
-        pressingLight, pressingLight_Lights = iterateMatrix(matrix.copy(), next_row, next_col)
+        luces[i], luces[fila] = luces[fila], luces[i]
 
-        #Si conduce a un tablero apagado, se agrega la celda actual a la lista
-        #y se devuelve pressingLight, pressingLight_Lights, esto significa que esta
-        #celda es parte de la solucion.
-        if(pressingLight):
-            pressingLight_Lights.append((row, col))
-            return pressingLight, pressingLight_Lights
-        return noPressingLight, noPressingLight_Lights
-    
-    #Me quedo con la lista de la funcion, no con el valor booleano 
-    _, lightsToPress = iterateMatrix(initialMatrix.copy(), 0, 0)
-    
-    #Itera a traves de todos los indices posibles de un vector n^2 que representa todas las luces del tablero.
-    #Cada indice "i" es una luz en el tablero.
-    #Para cada indice "i" se calcula la coordenada de fila(i // n) y columna(i % n) y se verifica
-    #si esta presente en lightsToPress, que tiene las coordeandas de la solucion del juego.
-    #Si estan, el valor en el vector creado va a ser 1, y si no, 0.
-    solutionVector = [1 if (i // n, i % n) in lightsToPress else 0 for i in range(n**2)]
-    return solutionVector
+        for j in range(i + 1, n ** 2):
+            if luces[j][i] == 1:
+                for k in range(i, n ** 2 + 1):
+                    luces[j][k] ^= luces[i][k]
+
+    # Sustitución hacia atrás
+    solucion = [luces[i][-1] for i in range(n ** 2)]
+    for i in range(n ** 2 - 1, -1, -1):
+        for j in range(i + 1, n ** 2):
+            solucion[i] ^= luces[i][j] & solucion[j]
+
+    solucionTemp = [solucion[i * n: (i + 1) * n] for i in range(n)]
+    solucionVector = [element for row in solucionTemp for element in row]
+    return solucionVector
+
 
 # Pide al usuario el tamaño de la matriz, verificando que sea un numero y sea mayor o igual a 2
 def pedirN():
@@ -121,7 +94,6 @@ def convertirVector(vector,n):
     fila_actual = 1
     for i in range(0, len(vector), n):
         fila = vector[i:i + n]
-        #print(f"Fila {fila_actual}: {fila}")
         texto += f"\nFila {fila_actual}: {fila}"
         fila_actual += 1
     texto += "\n"
@@ -132,7 +104,7 @@ def convertirVector(vector,n):
 def jugar():
     n = pedirN()
     matriz = crearMatriz(n)
-    solucion = lightsOutSolution(matriz)
+    solucion = lightsOut(matriz, n)
     convertirVector(solucion,n)
     print("Vector solución:", solucion, "\n")
     return
