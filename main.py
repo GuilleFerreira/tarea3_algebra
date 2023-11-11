@@ -1,6 +1,7 @@
 import numpy as np
 
-def lightsOut(matriz, n):
+def lightsOut(matriz):
+    n = len(matriz)
     luces = [] # Sistema de equaciones
     for i in range(n):
         for j in range(n):
@@ -53,7 +54,6 @@ def pedirN():
     while True:
         try:
             n = int(input("\nIngrese el orden de la matriz cuadrada: "))
-            n = int(n)
             if n >= 2:
                 break
             else:
@@ -105,7 +105,7 @@ def convertirVector(vector,n):
 def jugar():
     n = pedirN()
     matriz = crearMatriz(n)
-    solucion = lightsOut(matriz, n)
+    solucion = lightsOut(matriz)
     convertirVector(solucion,n)
     print("Vector solución:", solucion, "\n")
     return
