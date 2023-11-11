@@ -1,7 +1,7 @@
 import numpy as np
 
 def lightsOut(matriz, n):
-    luces = []
+    luces = [] # Sistema de equaciones
     for i in range(n):
         for j in range(n):
             luz = [0] * (n ** 2 + 1) # Inicializa la luz (ecuación) que contendrá los valores de la misma
@@ -48,11 +48,11 @@ def lightsOut(matriz, n):
     return solucionVector
 
 
-# Pide al usuario el tamaño de la matriz, verificando que sea un numero y sea mayor o igual a 2
+# Pide al usuario el orden de la matriz, verificando que sea un numero y sea mayor o igual a 2
 def pedirN():
     while True:
         try:
-            n = int(input("\nIngrese el tamaño de la matriz cuadrada: "))
+            n = int(input("\nIngrese el orden de la matriz cuadrada: "))
             n = int(n)
             if n >= 2:
                 break
@@ -62,6 +62,7 @@ def pedirN():
             print("Eso no es un número entero válido. Intente nuevamente.")
     return n
 
+# Crea la matriz ingresada por el usuario
 def crearMatriz(n):
     # Crear una matriz de ceros de tamaño n x n
     matriz = np.zeros((n, n), dtype=int)
@@ -85,7 +86,7 @@ def crearMatriz(n):
         except ValueError:
             print("Ingrese solo valores numéricos (0 o 1). Intente nuevamente.")
 
-    # Retorna la matriz resultante
+    # Retorna la matriz
     return matriz
 
 # Imprime el vector en "formato matriz" para que sea mas amigable al usuario.
